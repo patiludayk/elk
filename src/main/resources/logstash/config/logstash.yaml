@@ -1,5 +1,5 @@
 
 
 http.host: "0.0.0.0"
-path.config: /usr/share/logstash/pipeline
+path.config: /usr/share/logstash/pipeline       #location in docker where logstash pipeline config is stored
 xpack.monitoring.elasticsearch.hosts: [ "localhost:9200" ]
