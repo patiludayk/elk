@@ -1,0 +1,57 @@
+version: "3.3"
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.0  #elasticsearch image
+    container_name: elasticsearch #name you can choose will appear in docker desktop
+    environment:  #config details environment variable to app/image
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"   #port forwarding docker to local machine for accessibility its like HOST_PORT:CONTAINER_PORT[/protocol] also 127.0.0.1:9200:9200
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data  #path where elasticsearch data goes, this will be inside container - mount path, has to define - see below(elasticsearch_data)
+    networks:    #network where app is - has to be created for multiple images/service communication - just like vpc or in one network for accessibility
+      - elkdemo
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    depends_on:   #this means it depends on below image/s - means this will only start after below container starts
+      - elasticsearch
+    networks:
+      - elkdemo
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.6.0
+    container_name: logstash
+    volumes:  #where the logstash config is placed - basically logstash configuration
+      - /Users/udaypatil/IdeaProjects/elk/src/main/resources/logstash/config/logstash.yaml:/usr/share/logstash/config/logstash.yml:ro
+      - /Users/udaypatil/IdeaProjects/elk/src/main/resources/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - elkdemo
+    depends_on:
+      - elasticsearch
+
+networks:   #network define
+  elkdemo:
+    driver: bridge
+
+volumes:
+  elasticsearch_data:
+    driver: local
