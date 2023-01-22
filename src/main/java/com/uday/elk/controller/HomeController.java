@@ -33,7 +33,7 @@ public class HomeController {
     }
 
 
-    @GetMapping("/er")
+    @GetMapping("/error")
     public String ErrorPage() {
         LocalDateTime localDateTime = LocalDateTime.now();
         log.error("This error page " + localDateTime);
